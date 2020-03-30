@@ -1,0 +1,15 @@
+# Local bootstrap properties used for developers environment.
+spring:
+  profiles: local
+  cloud:
+    kubernetes:
+      config:
+        enabled: false
+      secret:
+        enabled: false
+      reload:
+        enabled: false
+server:
+  port: 8080
+  ssl:
+    enabled: false

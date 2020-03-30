@@ -1,0 +1,9 @@
+# Cloud bootstrap properties used for dockerized environment.
+# Placeholder variables are set up through ENV properties in the Dockerfile.
+spring:
+  profiles: cloud
+
+server:
+  port: ${SERVER_PORT}
+  ssl:
+    enabled: false

@@ -1,0 +1,24 @@
+# Cloud config for dockerized environments.
+spring:
+  profiles: cloud
+  cloud:
+    kubernetes:
+        reload:
+            enabled: true
+            strategy: refresh
+
+management:
+  # Management endpoints explicitly enabled to be used by K8S (configmap and secret hot update)
+  endpoint:
+    # Enable the /restart endpoint to restart the application context.
+    restart:
+      enabled: true
+    # Enable the /refresh endpoint to refresh configuration and re-initialize refresh scoped beans.
+    refresh:
+      enabled: true
+    # Whether to enable the health endpoint.
+    health:
+      enabled: true
+    # Whether to enable the info endpoint.
+    info:
+      enabled: true

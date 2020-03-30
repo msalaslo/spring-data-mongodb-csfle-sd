@@ -1,0 +1,3 @@
+# Local config for developer environment.
+spring:
+  profiles: local

@@ -1,0 +1,16 @@
+# For standard Spring Boot parameters see:
+# http://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
+server:
+  compression:
+    enabled: true
+
+spring:
+  profiles:
+    active: local
+  # change the application name for your project name , this name is reserved for the maven archetype code generation
+  application:
+    name: application-${spring.profiles.active}
+
+logging:
+  file: /logs/${spring.application.name}-${HOSTNAME:junit}
+  config: classpath:logback-${spring.profiles.active}.xml
