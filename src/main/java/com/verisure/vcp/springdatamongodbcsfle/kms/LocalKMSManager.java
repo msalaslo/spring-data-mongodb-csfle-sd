@@ -1,15 +1,16 @@
 package com.verisure.vcp.springdatamongodbcsfle.kms;
 
+import java.io.FileInputStream;
+import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.bson.BsonBinary;
-import org.bson.BsonDocument;
-import org.bson.BsonString;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.slf4j.Logger;
@@ -29,37 +30,22 @@ import com.mongodb.client.vault.ClientEncryption;
 import com.mongodb.client.vault.ClientEncryptions;
 
 @Component
-public class KMSManager {
+public class LocalKMSManager {
 
-	Logger logger = LoggerFactory.getLogger(KMSManager.class);
+	Logger logger = LoggerFactory.getLogger(LocalKMSManager.class);
 
 	@Value(value = "${spring.data.mongodb.uri}")
 	private String DB_CONNECTION;
-	
 	@Value(value = "${spring.data.mongodb.key.vault.database}")
 	private String KEY_VAULT_DATABASE;
-	
 	@Value(value = "${spring.data.mongodb.key.vault.collection}")
 	private String KEY_VAULT_COLLECTION;
-	
+	@Value(value = "${spring.data.mongodb.kmsprovider}")
+	private String KMS_PROVIDER;
 	@Value(value = "${spring.data.mongodb.key.vault.name}")
 	private String KEY_NAME;
-
-	@Value(value = "${spring.data.mongodb.remoteKmsProvider}")
-	private String REMOTE_KMS_PROVIDER;
-	
-	@Value(value = "${spring.data.mongodb.encryption.kms.region}")
-	private String KMS_AWS_REGION;
-
-	@Value(value = "${spring.data.mongodb.encryption.kms.accessKey}")
-	private String KMS_AWS_ACCESS_KEY;
-
-	@Value(value = "${spring.data.mongodb.encryption.kms.secretKey}")
-	private String KMS_AWS_SECRET_ACCESS_KEY;
-	
-	@Value(value = "${spring.data.mongodb.encryption.kms.masterKeyARN}")
-	private String KMS_AWS_MASTER_KEY_ARN;
-	
+	@Value(value = "${spring.data.mongodb.encryption.masterKeyPath}")
+	private String MASTER_KEY_PATH;
 
 	private String encryptionKeyBase64;
 	private UUID encryptionKeyUUID;
@@ -73,18 +59,13 @@ public class KMSManager {
 	}
 
 	public void buildOrValidateVault() {
+
 		if (doesEncryptionKeyExist()) {
 			return;
 		}
-		BsonString masterKeyRegion = new BsonString(KMS_AWS_REGION); // e.g. "us-east-2"
-		BsonString masterKeyArn = new BsonString(KMS_AWS_MASTER_KEY_ARN); // e.g. "arn:aws:kms:us-east-2:111122223333:alias/test-key"
-		DataKeyOptions dataKeyOptions = new DataKeyOptions().masterKey(
-		    new BsonDocument()
-		        .append("region", masterKeyRegion)
-		        .append("key", masterKeyArn));
-		//To validate that the key exists in doesEncryptionKeyExist
-		dataKeyOptions.keyAltNames(Arrays.asList(KEY_NAME));	
-		BsonBinary dataKeyId = getClientEncryption().createDataKey(REMOTE_KMS_PROVIDER, dataKeyOptions);
+		DataKeyOptions dataKeyOptions = new DataKeyOptions();
+		dataKeyOptions.keyAltNames(Arrays.asList(KEY_NAME));
+		BsonBinary dataKeyId = getClientEncryption().createDataKey(KMS_PROVIDER, dataKeyOptions);
 
 		this.encryptionKeyUUID = dataKeyId.asUuid();
 		logger.debug("DataKeyID [UUID]{}", dataKeyId.asUuid());
@@ -95,9 +76,11 @@ public class KMSManager {
 	}
 
 	private boolean doesEncryptionKeyExist() {
+
 		MongoClient mongoClient = MongoClients.create(DB_CONNECTION);
 		MongoCollection<Document> collection = mongoClient.getDatabase(KEY_VAULT_DATABASE)
 				.getCollection(KEY_VAULT_COLLECTION);
+
 		Bson query = Filters.in("keyAltNames", KEY_NAME);
 		Document doc = collection.find(query).first();
 
@@ -108,27 +91,33 @@ public class KMSManager {
 					.encodeToString(new BsonBinary((UUID) o.get("_id")).getData());
 			return true;
 		}).orElse(false);
+
+	}
+
+	private byte[] getMasterKey() {
+
+		byte[] localMasterKey = new byte[96];
+
+		FileInputStream fis = null;
+		try {
+			fis = new FileInputStream(MASTER_KEY_PATH);
+			fis.read(localMasterKey, 0, 96);
+		} catch (Exception e) {
+			logger.error("Error Initializing the master key");
+		}
+		return localMasterKey;
 	}
 
 	private Map<String, Map<String, Object>> getKMSMap() {
-		Map<String, Object> keyMap = getRemoteKMSDetails();
-		Map<String, Map<String, Object>> providers = new HashMap<String, Map<String, Object>>();
-		providers.put("aws", keyMap);
-		return providers;
+		Map<String, Object> keyMap = Stream.of(new AbstractMap.SimpleEntry<>("key", getMasterKey()))
+				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+		return Stream.of(new AbstractMap.SimpleEntry<>(KMS_PROVIDER, keyMap))
+				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 	}
 
-	private Map<String, Object> getRemoteKMSDetails() {
-		String masterKeyRegion = new String(KMS_AWS_REGION);
-		String awsAccessKeyId = new String(KMS_AWS_ACCESS_KEY);
-		String awsSecretAccessKey = new String(KMS_AWS_SECRET_ACCESS_KEY);
-		Map<String, Object> providerDetails = new HashMap<String, Object>();
-		providerDetails.put("accessKeyId", awsAccessKeyId);
-		providerDetails.put("secretAccessKey", awsSecretAccessKey);
-		providerDetails.put("region", masterKeyRegion);
-		return providerDetails;
-	}
-	
 	public ClientEncryption getClientEncryption() {
+
 		String keyVaultNamespace = KEY_VAULT_DATABASE + "." + KEY_VAULT_COLLECTION;
 		ClientEncryptionSettings clientEncryptionSettings = ClientEncryptionSettings.builder()
 				.keyVaultMongoClientSettings(MongoClientSettings.builder()
@@ -136,13 +125,16 @@ public class KMSManager {
 				.keyVaultNamespace(keyVaultNamespace).kmsProviders(this.getKMSMap()).build();
 
 		ClientEncryption clientEncryption = ClientEncryptions.create(clientEncryptionSettings);
+
 		return clientEncryption;
 	}
 
 	public void deleteKeyVaulCollection() {
+
 		MongoClient mongoClient = MongoClients.create(DB_CONNECTION);
 		MongoCollection<Document> collection = mongoClient.getDatabase(KEY_VAULT_DATABASE)
 				.getCollection(KEY_VAULT_COLLECTION);
 		collection.drop();
+
 	}
 }

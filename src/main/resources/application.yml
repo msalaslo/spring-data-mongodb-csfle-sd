@@ -1,22 +1,6 @@
 # For standard Spring Boot parameters see:
 # http://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
-server:
-  servlet:
-    session:
-      timeout: 1000
-
-
-# TODO: REVIEW IF YOUR APPLICATION NEEDS TRACE THIS PARAMETER OR MORE (this is an example with installationNumber)      
-# Spring Cloud Sleuth tracing extra fields to propagate (HTTP/Rest and messaging).
-spring:  
-  sleuth:
-    propagation-keys:
-    - installationnumber
-    log:
-      slf4j:
-        whitelisted-mdc-keys:  
-        - installationnumber
-        
+spring:        
   data:
     mongodb:
       database: CSFLE-INSTALLATION
@@ -27,8 +11,14 @@ spring:
           collection: "__keyVault"
           name: "dataEncKeyArquetipo"
       kmsprovider: "local"
+      remoteKmsProvider: "aws"      
       encryption:
         #cryptdpath: "/usr/local/bin/mongocryptd"
         masterKeyPath: "master-key.txt"
+        kms:
+          region: ${KMS_REGION} # e.g. "us-east-2"
+          accessKey: ${KMS_ACCESS_KEY}
+          secretKey: ${KMS_SECRET_KEY} 
+          masterKeyARN: ${KMS_MASTER_KEY_ARN} #e.g. "arn:aws:kms:us-east-2:111122223333:alias/test-key"
   autoconfigure:
     exclude: org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration,org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration,org.springframework.boot.autoconfigure.data.mongo.MongoRepositoriesAutoConfiguration        

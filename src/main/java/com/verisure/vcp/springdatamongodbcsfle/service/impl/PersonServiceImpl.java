@@ -1,5 +1,6 @@
 package com.verisure.vcp.springdatamongodbcsfle.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,8 +38,12 @@ public class PersonServiceImpl implements PersonService {
 
 	@Override
 	public List<Person> getPersons() {
+		List<Person> persons = new ArrayList<Person>();
 		List<EncryptedPerson> encryptedPersons = repository.findAll();
-		return toPersons(encryptedPersons);
+		if (encryptedPersons != null) {
+			persons = toPersons(encryptedPersons);
+		}
+		return persons;
 	}
 
 	public List<Person> toPersons(final List<EncryptedPerson> encryptedPersons) {
@@ -51,12 +56,22 @@ public class PersonServiceImpl implements PersonService {
 
 	@Override
 	public List<Person> findByName(String name) {
-		return toPersons(repository.findByName(name));		
+		List<Person> ps = new ArrayList<Person>();
+		List<EncryptedPerson> encryptedPersons = repository.findByName(name);
+		if (encryptedPersons != null) {
+			ps = toPersons(encryptedPersons);
+		}
+		return ps;
 	}
 
 	@Override
 	public Person findByDni(String dni) {
-		return mapper.getPerson(repository.findByDni(mapper.getEncryptedDni(dni)));
+		Person person = null;
+		EncryptedPerson encryptedPersons = repository.findByDni(mapper.getEncryptedDni(dni));
+		if (encryptedPersons != null) {
+			person = mapper.getPerson(encryptedPersons);
+		}
+		return person;
 	}
 
 }

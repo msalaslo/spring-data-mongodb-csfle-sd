@@ -26,6 +26,7 @@ public class PersonEncryptionMapper {
 		ep.setAge(p.getAge());
 		ep.setDni(kmsManager.getClientEncryption().encrypt(new BsonString(p.getDni()),
 				getEncryptOptions(DETERMINISTIC_ENCRYPTION_TYPE)));
+		ep.setId(p.getId());
 		return ep;
 	}
 
@@ -35,6 +36,7 @@ public class PersonEncryptionMapper {
 		p.setName(ep.getName());
 		p.setAge(ep.getAge());
 		p.setDni(encryptedDni);
+		p.setId(ep.getId());
 		return p;
 	}
 
