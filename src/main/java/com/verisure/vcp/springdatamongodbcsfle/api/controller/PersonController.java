@@ -55,14 +55,20 @@ public class PersonController {
 	@Operation(description = "get persons", responses = {
 			@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = PersonDTO.class))), responseCode = "200") })
 	public List<PersonDTO> getPersonBy(@RequestParam(required = false) final String name,
-			@RequestParam(required = false) final String dni) {
+			@RequestParam(required = false) final String dni,
+			@RequestParam(required = false) final Boolean encrypted) {
 		LOGGER.debug("getPersons::Trying to retrieve all persons");
+		boolean returnEncrypted = true;
+		if(encrypted != null) {
+			returnEncrypted = encrypted;
+		}
 		if (dni != null) {
 			List<PersonDTO> persons = new ArrayList<PersonDTO>();
 			persons.add(personConverter.toPersonDto(personService.findByDni(dni)));
 			return persons;
 		} else if (name != null) {
-			return personService.findByName(name).stream().map(personConverter::toPersonDto)
+			
+			return personService.findByName(name, returnEncrypted).stream().map(personConverter::toPersonDto)
 					.collect(Collectors.toList());
 		} else {
 			return personService.getPersons().stream().map(personConverter::toPersonDto).collect(Collectors.toList());

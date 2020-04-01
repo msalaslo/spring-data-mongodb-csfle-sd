@@ -41,25 +41,26 @@ public class PersonServiceImpl implements PersonService {
 		List<Person> persons = new ArrayList<Person>();
 		List<EncryptedPerson> encryptedPersons = repository.findAll();
 		if (encryptedPersons != null) {
-			persons = toPersons(encryptedPersons);
+			persons = toPersons(encryptedPersons, false);
 		}
 		return persons;
 	}
 
-	public List<Person> toPersons(final List<EncryptedPerson> encryptedPersons) {
+	public List<Person> toPersons(final List<EncryptedPerson> encryptedPersons, boolean encrypted) {
 		List<Person> persons = null;
 		if (encryptedPersons != null) {
-			persons = encryptedPersons.parallelStream().map(mapper::getPerson).collect(Collectors.toList());
+//			persons = encryptedPersons.parallelStream().map(mapper::getPerson).collect(Collectors.toList());
+			persons = encryptedPersons.parallelStream().map(ep -> mapper.getPerson(ep, encrypted)).collect(Collectors.toList());
 		}
 		return persons;
 	}
 
 	@Override
-	public List<Person> findByName(String name) {
+	public List<Person> findByName(String name, boolean encrypted) {
 		List<Person> ps = new ArrayList<Person>();
 		List<EncryptedPerson> encryptedPersons = repository.findByName(name);
 		if (encryptedPersons != null) {
-			ps = toPersons(encryptedPersons);
+			ps = toPersons(encryptedPersons, encrypted);
 		}
 		return ps;
 	}
@@ -69,7 +70,7 @@ public class PersonServiceImpl implements PersonService {
 		Person person = null;
 		EncryptedPerson encryptedPersons = repository.findByDni(mapper.getEncryptedDni(dni));
 		if (encryptedPersons != null) {
-			person = mapper.getPerson(encryptedPersons);
+			person = mapper.getPerson(encryptedPersons, false);
 		}
 		return person;
 	}

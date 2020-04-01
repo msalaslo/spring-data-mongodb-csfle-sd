@@ -34,11 +34,11 @@ public class PersonExecutor {
 		// Create a couple of non encrypted persons
 		Person p1 = new Person();
 		Person p2 = new Person();
-		
+
 		p1.setName("Miguel");
 		p1.setAge(34);
 		p1.setDni("11343122X");
-		
+
 		p2.setName("Pepe");
 		p2.setAge(21);
 		p2.setDni("11377122Y");
@@ -53,8 +53,9 @@ public class PersonExecutor {
 		logger.debug("Persons found with findAll():");
 		logger.debug("-------------------------------");
 
+		boolean encrypted = false;
 		List<Person> decryptedPersons = encryptedPersonRepository.findAll().stream()
-				.map(ep -> personEntityHelper.getPerson(ep)).collect(Collectors.toList());
+				.map(ep -> personEntityHelper.getPerson(ep, encrypted)).collect(Collectors.toList());
 
 		for (Person person : decryptedPersons) {
 			logger.debug(person.toString());
@@ -69,13 +70,12 @@ public class PersonExecutor {
 			EncryptedPerson ep = findByNamePerson.get(i);
 			logger.info("findByNamePerson Equals Miguel Success: {}", ep.getName().equals("Miguel"));
 		}
-		
 
 		// For Find by DNI we have to first get the binary version of DNI
 		EncryptedPerson findByDni = encryptedPersonRepository
 				.findByDni(personEntityHelper.getEncryptedDni("11343122X"));
 		logger.info("findByDni equals Miguel Success: {}",
-				personEntityHelper.getPerson(findByDni).getName().equals("Miguel"));
+				personEntityHelper.getPerson(findByDni, false).getName().equals("Miguel"));
 
 	}
 }

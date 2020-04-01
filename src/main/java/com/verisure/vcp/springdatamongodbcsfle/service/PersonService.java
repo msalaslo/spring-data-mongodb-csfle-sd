@@ -32,7 +32,7 @@ public interface PersonService {
 	 * 
 	 * @return The list of persons.
 	 */
-    List<Person> findByName(String name);
+    List<Person> findByName(String name, boolean encrypted);
     
 	/**
 	 * Gets the person by dni.

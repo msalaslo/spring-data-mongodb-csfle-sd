@@ -60,7 +60,8 @@ public class KMSManager {
 	@Value(value = "${spring.data.mongodb.encryption.kms.masterKeyARN}")
 	private String KMS_AWS_MASTER_KEY_ARN;
 	
-
+	private ClientEncryption clientEncryption;
+	
 	private String encryptionKeyBase64;
 	private UUID encryptionKeyUUID;
 
@@ -70,6 +71,19 @@ public class KMSManager {
 
 	public UUID getEncryptionKeyUUID() {
 		return encryptionKeyUUID;
+	}
+	
+	public ClientEncryption getClientEncryption() {
+		if(clientEncryption == null) {
+			String keyVaultNamespace = KEY_VAULT_DATABASE + "." + KEY_VAULT_COLLECTION;
+			ClientEncryptionSettings clientEncryptionSettings = ClientEncryptionSettings.builder()
+					.keyVaultMongoClientSettings(MongoClientSettings.builder()
+							.applyConnectionString(new ConnectionString(DB_CONNECTION)).build())
+					.keyVaultNamespace(keyVaultNamespace).kmsProviders(this.getKMSMap()).build();
+	
+			clientEncryption = ClientEncryptions.create(clientEncryptionSettings);
+		}
+		return clientEncryption;
 	}
 
 	public void buildOrValidateVault() {
@@ -128,17 +142,6 @@ public class KMSManager {
 		return providerDetails;
 	}
 	
-	public ClientEncryption getClientEncryption() {
-		String keyVaultNamespace = KEY_VAULT_DATABASE + "." + KEY_VAULT_COLLECTION;
-		ClientEncryptionSettings clientEncryptionSettings = ClientEncryptionSettings.builder()
-				.keyVaultMongoClientSettings(MongoClientSettings.builder()
-						.applyConnectionString(new ConnectionString(DB_CONNECTION)).build())
-				.keyVaultNamespace(keyVaultNamespace).kmsProviders(this.getKMSMap()).build();
-
-		ClientEncryption clientEncryption = ClientEncryptions.create(clientEncryptionSettings);
-		return clientEncryption;
-	}
-
 	public void deleteKeyVaulCollection() {
 		MongoClient mongoClient = MongoClients.create(DB_CONNECTION);
 		MongoCollection<Document> collection = mongoClient.getDatabase(KEY_VAULT_DATABASE)
