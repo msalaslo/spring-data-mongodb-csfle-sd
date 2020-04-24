@@ -13,8 +13,6 @@ import java.util.stream.Stream;
 import org.bson.BsonBinary;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -29,10 +27,11 @@ import com.mongodb.client.model.vault.DataKeyOptions;
 import com.mongodb.client.vault.ClientEncryption;
 import com.mongodb.client.vault.ClientEncryptions;
 
-@Component
-public class LocalKMSManager {
+import lombok.extern.slf4j.Slf4j;
 
-	Logger logger = LoggerFactory.getLogger(LocalKMSManager.class);
+@Component
+@Slf4j
+public class LocalKMSManager {
 
 	@Value(value = "${spring.data.mongodb.uri}")
 	private String DB_CONNECTION;
@@ -68,11 +67,11 @@ public class LocalKMSManager {
 		BsonBinary dataKeyId = getClientEncryption().createDataKey(KMS_PROVIDER, dataKeyOptions);
 
 		this.encryptionKeyUUID = dataKeyId.asUuid();
-		logger.debug("DataKeyID [UUID]{}", dataKeyId.asUuid());
+		LOGGER.debug("DataKeyID [UUID]{}", dataKeyId.asUuid());
 
 		String base64DataKeyId = Base64.getEncoder().encodeToString(dataKeyId.getData());
 		this.encryptionKeyBase64 = base64DataKeyId;
-		logger.debug("DataKeyID [base64]: {}", base64DataKeyId);
+		LOGGER.debug("DataKeyID [base64]: {}", base64DataKeyId);
 	}
 
 	private boolean doesEncryptionKeyExist() {
@@ -85,7 +84,7 @@ public class LocalKMSManager {
 		Document doc = collection.find(query).first();
 
 		return Optional.ofNullable(doc).map(o -> {
-			logger.debug("The Document is {}", doc);
+			LOGGER.debug("The Document is {}", doc);
 			this.encryptionKeyUUID = (UUID) o.get("_id");
 			this.encryptionKeyBase64 = Base64.getEncoder()
 					.encodeToString(new BsonBinary((UUID) o.get("_id")).getData());
@@ -103,7 +102,7 @@ public class LocalKMSManager {
 			fis = new FileInputStream(MASTER_KEY_PATH);
 			fis.read(localMasterKey, 0, 96);
 		} catch (Exception e) {
-			logger.error("Error Initializing the master key");
+			LOGGER.error("Error Initializing the master key");
 		}
 		return localMasterKey;
 	}

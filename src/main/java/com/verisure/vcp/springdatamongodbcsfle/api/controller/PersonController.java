@@ -2,7 +2,6 @@ package com.verisure.vcp.springdatamongodbcsfle.api.controller;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
@@ -10,7 +9,6 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -57,7 +55,7 @@ public class PersonController {
 	public List<PersonDTO> getPersonBy(@RequestParam(required = false) final String name,
 			@RequestParam(required = false) final String dni,
 			@RequestParam(required = false) final Boolean encrypted) {
-		LOGGER.debug("getPersons::Trying to retrieve all persons");
+		LOGGER.debug("getPersons::Trying to retrieve persons");
 		boolean returnEncrypted = true;
 		if(encrypted != null) {
 			returnEncrypted = encrypted;

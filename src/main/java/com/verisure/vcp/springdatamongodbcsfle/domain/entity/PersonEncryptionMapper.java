@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.mongodb.client.model.vault.EncryptOptions;
-import com.verisure.vcp.springdatamongodbcsfle.kms.KMSManager;
+import com.verisure.vcp.springdatamongodbcsfle.kms.LocalKMSManager;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -18,9 +18,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PersonEncryptionMapper {
 
-	@Autowired
-	protected KMSManager kmsManager;
+//	@Autowired
+//	protected KMSManager kmsManager;
 
+	@Autowired
+	protected LocalKMSManager kmsManager;
+	
 	// Apply deterministic encryption for searchable attributes
 	public static final String DETERMINISTIC_ENCRYPTION_TYPE = "AEAD_AES_256_CBC_HMAC_SHA_512-Deterministic";
 

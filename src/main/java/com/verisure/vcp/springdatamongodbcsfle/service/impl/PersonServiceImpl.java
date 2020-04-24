@@ -46,7 +46,7 @@ public class PersonServiceImpl implements PersonService {
 		return persons;
 	}
 
-	public List<Person> toPersons(final List<EncryptedPerson> encryptedPersons, boolean encrypted) {
+	private List<Person> toPersons(final List<EncryptedPerson> encryptedPersons, boolean encrypted) {
 		List<Person> persons = null;
 		if (encryptedPersons != null) {
 //			persons = encryptedPersons.parallelStream().map(mapper::getPerson).collect(Collectors.toList());

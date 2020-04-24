@@ -3,8 +3,9 @@ package com.verisure.vcp.springdatamongodbcsfle.api.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  * Sample DTO object. <b>Please remove for actual project implementation.</b>
@@ -13,7 +14,8 @@ import lombok.NoArgsConstructor;
  * @author FaaS [faas@securitasdirect.es]
  *
  */
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

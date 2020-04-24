@@ -8,7 +8,8 @@ spring:
       key:
         vault:
           database: "encryption"
-          collection: "__keyVault"
+          #collection: "__keyVault"
+          collection: "__keyVaultForLocalKMS"
           name: "dataEncKeyArquetipo"
       kmsprovider: "local"
       remoteKmsProvider: "aws"      

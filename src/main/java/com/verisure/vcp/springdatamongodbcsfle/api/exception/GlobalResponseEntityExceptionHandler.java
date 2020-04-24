@@ -1,8 +1,5 @@
 package com.verisure.vcp.springdatamongodbcsfle.api.exception;
 
-import com.verisure.vcp.springdatamongodbcsfle.api.dto.ErrorDTO;
-import com.verisure.vcp.springdatamongodbcsfle.service.exception.ServiceException;
-
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
@@ -14,6 +11,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+
+import com.verisure.vcp.springdatamongodbcsfle.api.dto.ErrorDTO;
+import com.verisure.vcp.springdatamongodbcsfle.service.exception.ServiceException;
 
 /**
  * Generic error handling mechanism.

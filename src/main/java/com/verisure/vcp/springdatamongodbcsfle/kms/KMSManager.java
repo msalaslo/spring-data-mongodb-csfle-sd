@@ -12,8 +12,6 @@ import org.bson.BsonDocument;
 import org.bson.BsonString;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -28,10 +26,11 @@ import com.mongodb.client.model.vault.DataKeyOptions;
 import com.mongodb.client.vault.ClientEncryption;
 import com.mongodb.client.vault.ClientEncryptions;
 
-@Component
-public class KMSManager {
+import lombok.extern.slf4j.Slf4j;
 
-	Logger logger = LoggerFactory.getLogger(KMSManager.class);
+@Component
+@Slf4j
+public class KMSManager {
 
 	@Value(value = "${spring.data.mongodb.uri}")
 	private String DB_CONNECTION;
@@ -73,19 +72,6 @@ public class KMSManager {
 		return encryptionKeyUUID;
 	}
 	
-	public ClientEncryption getClientEncryption() {
-		if(clientEncryption == null) {
-			String keyVaultNamespace = KEY_VAULT_DATABASE + "." + KEY_VAULT_COLLECTION;
-			ClientEncryptionSettings clientEncryptionSettings = ClientEncryptionSettings.builder()
-					.keyVaultMongoClientSettings(MongoClientSettings.builder()
-							.applyConnectionString(new ConnectionString(DB_CONNECTION)).build())
-					.keyVaultNamespace(keyVaultNamespace).kmsProviders(this.getKMSMap()).build();
-	
-			clientEncryption = ClientEncryptions.create(clientEncryptionSettings);
-		}
-		return clientEncryption;
-	}
-
 	public void buildOrValidateVault() {
 		if (doesEncryptionKeyExist()) {
 			return;
@@ -101,11 +87,24 @@ public class KMSManager {
 		BsonBinary dataKeyId = getClientEncryption().createDataKey(REMOTE_KMS_PROVIDER, dataKeyOptions);
 
 		this.encryptionKeyUUID = dataKeyId.asUuid();
-		logger.debug("DataKeyID [UUID]{}", dataKeyId.asUuid());
+		LOGGER.debug("DataKeyID [UUID]{}", dataKeyId.asUuid());
 
 		String base64DataKeyId = Base64.getEncoder().encodeToString(dataKeyId.getData());
 		this.encryptionKeyBase64 = base64DataKeyId;
-		logger.debug("DataKeyID [base64]: {}", base64DataKeyId);
+		LOGGER.debug("DataKeyID [base64]: {}", base64DataKeyId);
+	}
+	
+	public ClientEncryption getClientEncryption() {
+		if(clientEncryption == null) {
+			String keyVaultNamespace = KEY_VAULT_DATABASE + "." + KEY_VAULT_COLLECTION;
+			ClientEncryptionSettings clientEncryptionSettings = ClientEncryptionSettings.builder()
+					.keyVaultMongoClientSettings(MongoClientSettings.builder()
+							.applyConnectionString(new ConnectionString(DB_CONNECTION)).build())
+					.keyVaultNamespace(keyVaultNamespace).kmsProviders(this.getKMSMap()).build();
+	
+			clientEncryption = ClientEncryptions.create(clientEncryptionSettings);
+		}
+		return clientEncryption;
 	}
 
 	private boolean doesEncryptionKeyExist() {
@@ -116,7 +115,7 @@ public class KMSManager {
 		Document doc = collection.find(query).first();
 
 		return Optional.ofNullable(doc).map(o -> {
-			logger.debug("The Document is {}", doc);
+			LOGGER.debug("The Document is {}", doc);
 			this.encryptionKeyUUID = (UUID) o.get("_id");
 			this.encryptionKeyBase64 = Base64.getEncoder()
 					.encodeToString(new BsonBinary((UUID) o.get("_id")).getData());
@@ -127,7 +126,7 @@ public class KMSManager {
 	private Map<String, Map<String, Object>> getKMSMap() {
 		Map<String, Object> keyMap = getRemoteKMSDetails();
 		Map<String, Map<String, Object>> providers = new HashMap<String, Map<String, Object>>();
-		providers.put("aws", keyMap);
+		providers.put(REMOTE_KMS_PROVIDER, keyMap);
 		return providers;
 	}
 
