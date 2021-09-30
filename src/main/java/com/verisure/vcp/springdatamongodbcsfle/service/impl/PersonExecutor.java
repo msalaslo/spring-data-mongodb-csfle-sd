@@ -23,7 +23,7 @@ public class PersonExecutor {
 	private EncryptedPersonRepository encryptedPersonRepository;
 
 	@Autowired
-	private PersonEncryptionMapper personEntityHelper;
+	private PersonEncryptionMapper personEntityMapper;
 
 	private void clean() {
 		encryptedPersonRepository.deleteAll();
@@ -44,8 +44,8 @@ public class PersonExecutor {
 		p2.setDni("11377122Y");
 
 		// Encrypt the Person and save to EncryptedPerson
-		EncryptedPerson ep1 = personEntityHelper.getEncrypedPerson(p1);
-		EncryptedPerson ep2 = personEntityHelper.getEncrypedPerson(p2);
+		EncryptedPerson ep1 = personEntityMapper.getEncrypedPerson(p1);
+		EncryptedPerson ep2 = personEntityMapper.getEncrypedPerson(p2);
 		// Save persons..
 		encryptedPersonRepository.saveAll(Arrays.asList(new EncryptedPerson[] { ep1, ep2 }));
 
@@ -55,7 +55,7 @@ public class PersonExecutor {
 
 		boolean encrypted = false;
 		List<Person> decryptedPersons = encryptedPersonRepository.findAll().stream()
-				.map(ep -> personEntityHelper.getPerson(ep, encrypted)).collect(Collectors.toList());
+				.map(ep -> personEntityMapper.getPerson(ep, encrypted)).collect(Collectors.toList());
 
 		for (Person person : decryptedPersons) {
 			logger.debug(person.toString());
@@ -73,9 +73,9 @@ public class PersonExecutor {
 
 		// For Find by DNI we have to first get the binary version of DNI
 		EncryptedPerson findByDni = encryptedPersonRepository
-				.findByDni(personEntityHelper.getEncryptedDni("11343122X"));
+				.findByDni(personEntityMapper.getEncryptedDni("11343122X"));
 		logger.info("findByDni equals Miguel Success: {}",
-				personEntityHelper.getPerson(findByDni, false).getName().equals("Miguel"));
+				personEntityMapper.getPerson(findByDni, false).getName().equals("Miguel"));
 
 	}
 }
