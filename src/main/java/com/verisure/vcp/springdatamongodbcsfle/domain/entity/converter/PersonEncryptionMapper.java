@@ -1,4 +1,4 @@
-package com.verisure.vcp.springdatamongodbcsfle.domain.entity;
+package com.verisure.vcp.springdatamongodbcsfle.domain.entity.converter;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.mongodb.client.model.vault.EncryptOptions;
+import com.verisure.vcp.springdatamongodbcsfle.domain.entity.EncryptedPerson;
+import com.verisure.vcp.springdatamongodbcsfle.domain.entity.Person;
 import com.verisure.vcp.springdatamongodbcsfle.kms.LocalKMSManager;
 
 import lombok.extern.slf4j.Slf4j;

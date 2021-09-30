@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 import com.verisure.vcp.springdatamongodbcsfle.domain.entity.EncryptedPerson;
 import com.verisure.vcp.springdatamongodbcsfle.domain.entity.Person;
-import com.verisure.vcp.springdatamongodbcsfle.domain.entity.PersonEncryptionMapper;
+import com.verisure.vcp.springdatamongodbcsfle.domain.entity.converter.PersonEncryptionMapper;
 import com.verisure.vcp.springdatamongodbcsfle.domain.repository.EncryptedPersonRepository;
 
 @Component

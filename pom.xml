@@ -10,7 +10,6 @@
 		<version>1.0.2</version>
 	</parent>
 
-	<groupId>com.verisure.vcp</groupId>
 	<artifactId>spring-data-mongodb-csfle</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
@@ -33,10 +32,11 @@
 
 		<!-- Client-Side Field Level Encryption -->
 		<dependency>
-			<groupId>org.mongodb</groupId>
-			<artifactId>mongodb-crypt</artifactId>
-			<version>1.0.1</version>
+		    <groupId>org.mongodb</groupId>
+		    <artifactId>mongodb-crypt</artifactId>
+		    <version>1.0.1</version>
 		</dependency>
+
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -45,10 +45,10 @@
 
 		<!-- Spring Cloud Kubernetes Config Load application properties from Kubernetes 
 			ConfigMaps. Reload application properties when a ConfigMap or Secret changes. -->
-		<dependency>
+		<!-- dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-kubernetes-config</artifactId>
-		</dependency>
+		</dependency -->
 
 		<!-- SpringDoc OpenAPI3 -->
 		<dependency>
